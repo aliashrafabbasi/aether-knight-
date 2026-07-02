@@ -39,19 +39,24 @@ def _validate_token(token: str, db: Session) -> dict:
     return payload
 
 
+def get_user_from_token(token: str, db: Session) -> models.User | None:
+    try:
+        payload = _validate_token(token, db)
+    except HTTPException:
+        return None
+
+    return db.query(models.User).filter(
+        models.User.email == payload["sub"]
+    ).first()
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ):
-    payload = _validate_token(credentials.credentials, db)
-
-    user = db.query(models.User).filter(
-        models.User.email == payload["sub"]
-    ).first()
-
+    user = get_user_from_token(credentials.credentials, db)
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-
+        raise HTTPException(status_code=401, detail="Invalid token")
     return user
 
 

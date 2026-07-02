@@ -4,10 +4,10 @@ from sqlalchemy.orm import Session
 
 from app.db.database import engine
 from app.db import models
-from app.schemas.auth import UserCreate, UserLogin, UserOut, AuthToken, UserList
+from app.schemas.auth import UserCreate, UserLogin, UserOut, AuthToken
 from app.schemas.response import ApiResponse
 from app.core.security import hash_password, verify_password, create_access_token, decode_token
-from app.core.dependencies import get_db, get_current_user, get_admin_user, bearer_scheme
+from app.core.dependencies import get_db, get_current_user, bearer_scheme
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -29,11 +29,14 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    if user.role not in ("admin", "user"):
+        raise HTTPException(status_code=400, detail="Role must be admin or user")
+
     new_user = models.User(
         name=user.name,
         email=user.email,
         hashed_password=hash_password(user.password),
-        role="user",
+        role=user.role,
     )
 
     db.add(new_user)
@@ -90,19 +93,3 @@ def logout(
             db.commit()
 
     return ApiResponse(message="Logged out")
-
-
-@router.get("/users", response_model=ApiResponse[UserList])
-def list_users(
-    db: Session = Depends(get_db),
-    admin: models.User = Depends(get_admin_user),
-):
-    users = db.query(models.User).all()
-    user_list = [_user_out(user) for user in users]
-
-    return ApiResponse(
-        data=UserList(
-            total=len(user_list),
-            users=user_list,
-        ),
-    )

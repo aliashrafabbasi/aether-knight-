@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -5,6 +7,7 @@ class UserCreate(BaseModel):
     name: str
     email: str
     password: str
+    role: Optional[str] = "user"
 
 
 class UserLogin(BaseModel):
@@ -13,10 +16,17 @@ class UserLogin(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: int
+    id: str
     name: str
     email: str
     role: str
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
 
 
 class AuthToken(BaseModel):
