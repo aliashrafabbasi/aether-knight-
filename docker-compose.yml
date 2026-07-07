@@ -1,0 +1,33 @@
+services:
+  api:
+    build: .
+    container_name: aether-knight-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////data/test.db
+      TEMP_DIR: /data/temp
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000}
+    volumes:
+      - aether-data:/data
+    restart: unless-stopped
+
+  # React UI — enable with: docker compose --profile frontend up --build
+  frontend:
+    profiles: ["frontend"]
+    build:
+      context: ../aether-knight-frontend/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    container_name: aether-knight-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  aether-data:

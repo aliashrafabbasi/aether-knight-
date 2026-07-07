@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets and local data
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+
+# Git and IDE
+.git/
+.gitignore
+.cursor/
+.vscode/
+.idea/
+
+# Runtime artifacts
+temp/
+tmp/
+*.log
+*.wav
+*.mp3
+*.webm
+
+# Docs / misc (not needed in image)
+README.md
+docker-compose*.yml
+Dockerfile
